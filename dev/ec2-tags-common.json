@@ -1,0 +1,54 @@
+[
+  {
+    "Key": "availability",
+    "Value": "availability-zone"
+  },
+  {
+    "Key": "cost-center",
+    "Value": "2236"
+  },
+  {
+    "Key": "customer",
+    "Value": "2236"
+  },
+  {
+    "Key": "environment",
+    "Value": "development"
+  },
+  {
+    "Key": "expected-traffic",
+    "Value": "external_inbound"
+  },
+  {
+    "Key": "git-repo",
+    "Value": "https://github.com/azdot/aidw-portal-web"
+  },
+  {
+    "Key": "orchestration",
+    "Value": "cloud-formation"
+  },
+  {
+    "Key": "patch-group",
+    "Value": "none"
+  },
+  {
+    "Key": "safe-to-destroy",
+    "Value": "yes"
+  },
+  {
+    "Key": "schedule",
+    "Value": "office-hours"
+  },
+  {
+    "Key": "service-name",
+    "Value": "aidw"
+  },
+  {
+    "Key": "service-type",
+    "Value": "website-aspnet47"
+  },
+  {
+    "Key": "technical-owner",
+    "Value": "cloud-solutions"
+  }
+]

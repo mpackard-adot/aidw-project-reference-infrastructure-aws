@@ -1,0 +1,82 @@
+[
+  {
+    "ParameterKey": "ADDirectoryOU",
+    "ParameterValue": "OU=apphosts,OU=devdot,DC=devdot,DC=state,DC=az"
+  },
+  {
+    "ParameterKey": "ADDirectoryId",
+    "ParameterValue": "d-92679ad5c1"
+  },
+  {
+    "ParameterKey": "ADDirectoryName",
+    "ParameterValue": "devdot.state.az"
+  },
+  {
+    "ParameterKey": "AdditionalSecurityGroupIds",
+    "ParameterValue": "sg-0ad25617403946708,sg-0839f6f974caf8b6d"
+  },
+  {
+    "ParameterKey": "ADDnsIpAddresses1",
+    "ParameterValue": "10.166.64.253"
+  },
+  {
+    "ParameterKey": "ADDnsIpAddresses2",
+    "ParameterValue": "10.166.128.253"
+  },
+  {
+    "ParameterKey": "AMI",
+    "ParameterValue": "ami-0e478decdf2fa1836"
+  },
+  {
+    "ParameterKey": "BackupPlan",
+    "ParameterValue": "none"
+  },
+  {
+    "ParameterKey": "BuildEnvironment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "Consumer",
+    "ParameterValue": "azdot"
+  },
+  {
+    "ParameterKey": "DataDrive",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "DataDriveSize",
+    "ParameterValue": "50"
+  },
+  {
+    "ParameterKey": "Ec2Name",
+    "ParameterValue": "adwwebd00304"
+  },
+  {
+    "ParameterKey": "EnableCodeDeploy",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t3a.small"
+  },
+  {
+    "ParameterKey": "InstanceSecurityGroupId",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "Name",
+    "ParameterValue": "aidw"
+  },
+  {
+    "ParameterKey": "ProtectInstance",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "RootDriveSize",
+    "ParameterValue": "80"
+  },
+  {
+    "ParameterKey": "Subnet",
+    "ParameterValue": "subnet-0f0240a255674713a"
+  }
+]

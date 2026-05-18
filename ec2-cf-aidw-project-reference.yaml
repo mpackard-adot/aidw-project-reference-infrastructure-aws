@@ -1,0 +1,546 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Default template used to provision an EC2 instance and supporting AWS resources.
+  Version: 1.1 (2026-04-23)
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Common
+        Parameters:
+          - BuildEnvironment
+          - Consumer
+          - Name
+      - Label:
+          default: Microsoft Active Directory Domain Services Configuration
+        Parameters:
+          - ADDirectoryId
+          - ADDirectoryName
+          - ADDirectoryOU
+          - ADDnsIpAddresses1
+          - ADDnsIpAddresses2
+      - Label:
+          default: Network Configuration
+        Parameters:
+          - InstanceSecurityGroupId
+          - Subnet
+      - Label:
+          default: Primary EC2 Configuration
+        Parameters:
+          - Ec2Name
+          - InstanceType
+          - AMI
+          - RootDriveSize
+          - RootDriveType
+          - DataDrive
+          - DataDrivePolicy
+          - DataDriveSize
+          - DataDriveType
+      - Label:
+          default: Optional EC2 Configuration
+        Parameters:
+          - BackupPlan
+          - EnableCodeDeploy
+          - ProtectInstance
+          - PatchGroup
+    ParameterLabels:
+      ADDirectoryId:
+        default: 'Directory ID'
+      ADDirectoryName:
+        default: 'Directory Name'
+      ADDirectoryOU:
+        default: 'Active Directory OU'
+      ADDnsIpAddresses1:
+        default: 'Primary DNS IP Address'
+      ADDnsIpAddresses2:
+        default: 'Secondary DNS IP Address'
+      AMI:
+        default: 'Image ID'
+      BackupPlan:
+        default: "Backup Plan"
+      BuildEnvironment:
+        default: 'Build Environment'
+      Consumer:
+        default: 'Consumer or Product'
+      DataDrive:
+        default: 'Attach a data drive?'
+      DataDriveSize:
+        default: 'Data Drive Size'
+      DataDriveType:
+        default: 'Data Drive Type'
+      Ec2Name:
+        default: 'Instance Name'
+      EnableCodeDeploy:
+        default: "Enable CodeDeploy"
+      InstanceType:
+        default: "Instance Type"
+      InstanceSecurityGroupId:
+        default: "Instance Security Group ID"
+      AdditionalSecurityGroupIds:
+        default: "Additional Security Group ID's"
+      Name:
+        default: 'Application or Service Name'
+      PatchGroup:
+        default: "Patch Group"
+      ProtectInstance:
+        default: "Instance Protection" 
+      RootDriveSize:
+        default: 'Drive Size'
+      RootDriveType:
+        default: 'Drive Type'
+      Subnet:
+        default: 'Subnet ID'
+Parameters:
+  ###############################################################################
+  # Common Parameters
+  ###############################################################################
+  Consumer:
+    Type: String
+    Description: '(Optional) The product or consumer the resource(s) have been provisioned for.'
+    AllowedPattern : "^([A-Za-z0-9]+(-[A-Za-z0-9]+)*)?$"
+    ConstraintDescription: "May be empty, or must contain only alphanumeric characters or single dashes (no leading, trailing, or consecutive dashes)."
+  BuildEnvironment:
+    Type: String
+    Description: 'Build environment option prepending to the deployment type.'
+    AllowedValues:
+      - dev
+      - test
+      - stage
+      - prod
+      - uat
+  Name:
+    Type: String
+    Description: 'The name of the application or service being hosted.'
+    AllowedPattern : '^[a-z][A-Za-z0-9]{2,49}$'
+    ConstraintDescription: "Must be camelCase, start with a lowercase letter, and between 3-50 alphanumeric characters."
+  ###############################################################################
+  # Active Directory Domain Parameters
+  ###############################################################################
+  ADDirectoryOU:
+    Type: String
+    Description: 'Active Directory OU to place server in.'
+  ADDirectoryId:
+    Type: String
+    Description: 'Active Directory ID'
+  ADDirectoryName:
+    Type: String
+    Description: 'Active Directory Name'
+  ADDnsIpAddresses1:
+    Type: String
+    Description: Active Directory DNS Address 1
+    AllowedPattern: '^$|^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
+  ADDnsIpAddresses2:
+    Type: String
+    Description: Active Directory DNS Address 2
+    AllowedPattern: '^$|^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
+  ###############################################################################
+  # EC2 Parameters
+  ###############################################################################
+  AdditionalSecurityGroupIds:
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+    # We use a default of an empty string or leave it out
+    Default: ""
+  AMI:
+    Description: AMI ID
+    Type: AWS::EC2::Image::Id
+    AllowedPattern : "ami-[0-9a-f]{17}"
+    ConstraintDescription: Must be a valid AMI image id.
+  BackupPlan:
+    Description: AWS Backup Plan
+    Type: String
+    ConstraintDescription: Must be a valid AWS Backup plan
+    AllowedValues:
+      - none
+      - daily
+    Default: daily
+  DataDrive:
+    Description: "Create Data drive 'D:'."
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: 'Must specify true or false.'
+  DataDriveSize:
+    Description: 'The size of the D: Drive in GB. Used only when a Data drive is created.'
+    Type: Number
+    Default: 10
+    MinValue: 5
+    MaxValue: 1024
+    ConstraintDescription: 'Must be between 5 and 1024 GB.'
+  DataDriveType:
+    Description: 'The volume type to use for the the data (D:) drive.'
+    Type: String
+    Default: gp3
+    AllowedValues:
+      - gp3
+      - io1
+      - io2
+      - standard
+  Ec2Name:
+    Type: String
+    Description: Name of the EC2 and Domain registered name
+    AllowedPattern : ".+"
+    ConstraintDescription: 'EC2 name is required'
+  EnableCodeDeploy:
+    Description: "Enable AWS CodeDeploy agent"
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: 'Must specify true or false.'
+  InstanceSecurityGroupId:
+    Description: 'Security Group ID for EC2 instance.'
+    Type: String
+    AllowedPattern: "^sg-[0-9a-f]{8}([0-9a-f]{9})?$|^$"
+    Default: ''
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    ConstraintDescription: Must be a valid EC2 instance type.
+    AllowedValues:
+      - t3.small
+      - t3a.small
+      - t3.medium
+      - t3a.medium
+      - t3.large
+      - t3a.large
+      - t3.xlarge
+      - t3a.xlarge
+      - t3.2xlarge
+      - t3a.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - r5.large
+    Default: t3a.small
+  PatchGroup:
+    Description: Patch Group
+    Type: String
+    ConstraintDescription: 'Must be a valid defined AZDOT SSM Patch Group'
+    AllowedValues:
+      - none
+      - sunday
+      - saturday
+      - friday
+    Default: sunday
+  ProtectInstance:
+    Type: String
+    Description: 'Enables EC2 termination protection, CloudWatch alarms, and disables domain join cleanup.'
+    AllowedValues:
+      - true
+      - false
+  RootDriveSize:
+    Description: 'The size of the C: Drive in GB.'
+    Type: Number
+    MinValue: 50
+    MaxValue: 1024
+    ConstraintDescription: 'Must be between 50 and 1024 GB.'
+    Default: 80
+  RootDriveType:
+    Description: 'The volume type to use for the the C: Drive.'
+    Type: String
+    Default: gp3
+    AllowedValues:
+      - gp3
+      - io1
+      - io2
+      - standard
+  Subnet:
+    Description: 'Subnet for EC2 to be placed in'
+    Type: 'AWS::EC2::Subnet::Id'
+    ConstraintDescription: "Must be a valid Subnet ID (e.g., subnet-0123456789abcdef0)."
+    AllowedPattern: "^$|^subnet-[0-9a-fA-F]{8,17}$"
+###############################################################################
+# Deploy Conditions
+###############################################################################
+Conditions:
+  EnableProtection: !Equals [ !Ref ProtectInstance, 'true']
+  ConfigureCodeDeploy: !Equals [ !Ref EnableCodeDeploy, 'true']
+  DisableProtection: !Not [ !Equals [ !Ref ProtectInstance, "true" ] ]
+  CreateDataDrive: !Equals [ !Ref DataDrive, 'true']
+  ConsumerWasDefined: !Not [ !Equals [ !Ref Consumer, "" ] ]
+  NameWasDefined: !Not [ !Equals [ !Ref Name, "" ] ]
+  HasAdditionalSecurityGroupIds: !Not [!Equals [!Join ["", !Ref AdditionalSecurityGroupIds], ""]]
+  HasInstanceSecurityGroupId: !Not [ !Equals [ !Ref InstanceSecurityGroupId, "" ] ]
+###############################################################################
+# Resources 
+###############################################################################
+Resources:
+  Ec2InstanceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonSSMDirectoryServiceAccess
+        - Fn::ImportValue: !Sub "ec2-${BuildEnvironment}-managedPolicy-sharedResourcesArn"
+      Path: /
+      RoleName: !Sub "ec2-${BuildEnvironment}-iam-${Ec2Name}"
+      Description: 'EC2 instance IAM role.'
+
+  IamInstanceProfile: 
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Roles: 
+        - !Ref Ec2InstanceRole
+
+  Ec2KeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties: 
+      KeyName: !Sub "ec2-${BuildEnvironment}-keypair-${Ec2Name}"
+      Tags:
+        - Key: Name
+          Value: !Sub 'ec2-${BuildEnvironment}-keypair-${Ec2Name}'
+
+  Ec2Instance:
+    Type: "AWS::EC2::Instance"
+    DependsOn: InstanceLogGroup
+    Properties:
+      DisableApiTermination: !If [EnableProtection, true, false]
+      ImageId: !Ref AMI
+      KeyName: !Ref Ec2KeyPair
+      IamInstanceProfile: !Ref IamInstanceProfile
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        !If 
+          - HasAdditionalSecurityGroupIds
+          - !Split 
+            - ","
+            - !Join 
+              - ","
+              - - Fn::ImportValue: !Sub "subscriber-${BuildEnvironment}-securitygroup-directoryservices:id"
+                - Fn::ImportValue: !Sub "ec2-${BuildEnvironment}-securitygroup-common:id"
+                - !If [HasInstanceSecurityGroupId,!Ref InstanceSecurityGroupId,!Ref "AWS::NoValue"]
+                - !Join [",",!Ref AdditionalSecurityGroupIds]
+          - - Fn::ImportValue: !Sub "subscriber-${BuildEnvironment}-securitygroup-directoryservices:id"
+            - Fn::ImportValue: !Sub "ec2-${BuildEnvironment}-securitygroup-common:id"
+            - !If [HasInstanceSecurityGroupId,!Ref InstanceSecurityGroupId,!Ref "AWS::NoValue"]
+      SubnetId: !Ref Subnet
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 
+              Ref: RootDriveSize
+            VolumeType: 
+              Ref: RootDriveType
+            DeleteOnTermination: false
+            Encrypted: true
+            KmsKeyId: 
+              Fn::ImportValue: !Sub "ebs-${BuildEnvironment}-kms-keyAlias"
+      Tags:
+        - Key: Name
+          Value: !Ref Ec2Name
+        - Key: 'Patch Group'
+          Value: !Ref PatchGroup
+        - Key: 'backup'
+          Value: !Ref BackupPlan
+        - Key: 'deployment-target'
+          Value: !If [ConfigureCodeDeploy, !Sub "${Name}-${BuildEnvironment}","not-set"]
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |
+              <powershell>
+              $config = & "$env:ProgramFiles/Amazon/EC2Launch/EC2Launch.exe" get-agent-config --format json | ConvertFrom-Json
+              $initializeVolumes = '
+              {
+                "task": "initializeVolume",
+                "inputs": {
+                "initialize": "all" 
+                }
+              }
+              '
+              $config.config | %{if($_.stage -eq 'postReady'){$_.tasks += (ConvertFrom-Json -InputObject $initializeVolumes)}}
+              $config | ConvertTo-Json -Depth 6 | Out-File -encoding UTF8 $env:ProgramData/Amazon/EC2Launch/config/agent-config.yml
+
+              Add-WindowsFeature RSAT-AD-PowerShell
+              Rename-Computer -NewName '${Ec2Name}' -Restart
+              </powershell>
+
+  DataVolume:
+    Type: AWS::EC2::Volume
+    Condition: CreateDataDrive
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Size: !Ref DataDriveSize
+      VolumeType: !Ref DataDriveType
+      Encrypted: true
+      KmsKeyId: 
+        Fn::ImportValue: !Sub "ebs-${BuildEnvironment}-kms-keyAlias"
+      AvailabilityZone: !GetAtt Ec2Instance.AvailabilityZone
+  
+  DataVolumeMountPoint:
+    Type: AWS::EC2::VolumeAttachment
+    Condition: CreateDataDrive
+    Properties:
+      InstanceId: !Ref Ec2Instance
+      VolumeId: !Ref DataVolume
+      Device: xvdn
+
+  InstanceLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      KmsKeyId:
+        Fn::ImportValue: !Sub "cloudwatch-${BuildEnvironment}-kms-azdot:arn"
+      LogGroupName: !Join
+              - ""
+              - - "/" 
+                - !If
+                    - ConsumerWasDefined
+                    - !Join 
+                      - ""
+                      - - !Ref Consumer
+                        - "/"
+                    - "azdot/"
+                - !If
+                    - NameWasDefined
+                    - !Join 
+                      - ""
+                      - - !Ref Name
+                        - "/"
+                    - ""
+                - !Ref BuildEnvironment
+                - "/ec2/"
+                - !Ref Ec2Name
+      Tags:
+        - Key: Name
+          Value: !Sub '${Consumer}-${BuildEnvironment}-cloudwatch-${Ec2Name}'
+
+  ConfigureCodeDeployCloudWatchAssociation:
+    Type: AWS::SSM::Association
+    Properties:
+      AssociationName: !Sub '${Ec2Name}-${BuildEnvironment}-ssm-configureCloudWatchAndCodeDeploy'
+      DocumentVersion: '$LATEST'
+      Name: !Sub "ec2-${BuildEnvironment}-ssm-configureCloudWatchAndCodeDeploy"
+      Parameters:
+        AutomationAssumeRole: 
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/ssm-${BuildEnvironment}-iam-automationServiceRole'
+        InstanceId: 
+          - !Ref Ec2Instance
+        LogGroupName: 
+          - !Ref InstanceLogGroup
+        ConfigurationLocation: 
+          - !Sub '/azdot/${BuildEnvironment}/cloudwatch/configurations/default'
+        EnableCodeDeploy: 
+          - !Ref EnableCodeDeploy
+        # ConfigurationInput: 
+          # Optional Manual CloudWatch configurations
+          # - !Sub | 
+          #     {
+          #       "logs": {
+          #         "logs_collected": {
+          #           "windows_events": {
+          #             "collect_list": [
+          #               {
+          #                 "event_name": "EC2ConfigService",
+          #                 "event_levels": [ "CRITICAL", "ERROR", "WARNING", "INFORMATION", "VERBOSE" ],
+          #                 "log_group_name": "${InstanceLogGroup}",
+          #                 "log_stream_name": "${Ec2Name}-EC2ConfigService",  
+          #                 "event_format": "text"
+          #               },
+          #               {
+          #                 "event_name": "System",
+          #                 "event_levels": [ "CRITICAL", "ERROR", "WARNING", "INFORMATION" ],
+          #                 "log_group_name": "${InstanceLogGroup}",
+          #                 "log_stream_name": "${Ec2Name}-SystemLogs",
+          #                 "event_format": "text"
+          #               }
+          #             ]
+          #           },
+          #           "files": {
+          #             "collect_list": [
+          #               {
+          #                 "file_path": "C:\\ProgramData\\Amazon\\CodeDeploy\\deployment-logs\\codedeploy-agent-deployments.log",
+          #                 "log_group_name": "${InstanceLogGroup}",
+          #                 "log_stream_name": "${Ec2Name}-CodeDeploy-DeploymentLogs"
+          #               },
+          #               {
+          #                 "file_path": "C:\\ProgramData\\Amazon\\CodeDeploy\\log\\codedeploy-agent-log.txt",
+          #                 "log_group_name": "${InstanceLogGroup}",
+          #                 "log_stream_name": "${Ec2Name}-CodeDeploy-ServiceLogs"
+          #               }
+          #             ]
+          #           }
+          #         }
+          #       }
+          #     }
+      WaitForSuccessTimeoutSeconds: 3000
+
+  JoinDirectoryServiceDomainAssociation:
+    Type: 'AWS::SSM::Association'
+    DependsOn: ConfigureCodeDeployCloudWatchAssociation
+    Properties:
+      AssociationName: !Sub '${Ec2Name}-${BuildEnvironment}-ssm-joinDirectoryServiceDomain'
+      Name: AWS-JoinDirectoryServiceDomain
+      Parameters:
+        directoryId: 
+          - !Ref ADDirectoryId
+        directoryName: 
+          - !Ref ADDirectoryName
+        directoryOU: 
+          - !Ref ADDirectoryOU
+        dnsIpAddresses:
+          - !Ref ADDnsIpAddresses1
+          - !Ref ADDnsIpAddresses2
+      Targets:
+        - 
+          Key: InstanceIds
+          Values:
+            - !Ref Ec2Instance
+      WaitForSuccessTimeoutSeconds: 2000
+
+  UnjoinDomainOnDeletion:
+    Type: AWS::CloudFormation::CustomResource
+    Condition: DisableProtection
+    DependsOn: JoinDirectoryServiceDomainAssociation
+    Properties:
+      ServiceToken: 
+        Fn::ImportValue: !Sub 'customresource-${BuildEnvironment}-lambda-unjoindomain'
+      InstanceId: !Ref Ec2Instance
+      Description: 'Removes instance from active directory when the stack is deleted'
+
+  Ec2InstanceRecoveryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: EnableProtection
+    Properties:
+      AlarmName: !Sub 'ec2-${BuildEnvironment}-alarm-${Ec2Name}'
+      AlarmDescription: Trigger a recovery when instance status check fails for 15 consecutive minutes.
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 15
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      AlarmActions:
+        - !Sub arn:aws:automate:${AWS::Region}:ec2:recover
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref Ec2Instance
+      Tags:
+        - Key: Name
+          Value: !Sub 'ec2-${BuildEnvironment}-alarm-${Ec2Name}'
+        - Key: 'service-type'
+          Value: 'cloudwatch-alarm'
+        - Key: orchestration
+          Value: cloud-formation
+        - Key: stack-id
+          Value: !Ref AWS::StackId
+        - Key: stack-name
+          Value: !Ref AWS::StackName
