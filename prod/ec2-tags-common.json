@@ -21,7 +21,7 @@
   },
   {
     "Key": "git-repo",
-    "Value": "https://github.com/azdot/aidw-portal-web"
+    "Value": "https://github.com/azdot/aidw-project-reference-web"
   },
   {
     "Key": "orchestration",
@@ -45,7 +45,7 @@
   },
   {
     "Key": "service-name",
-    "Value": "aidw"
+    "Value": "projectReference"
   },
   {
     "Key": "service-type",
