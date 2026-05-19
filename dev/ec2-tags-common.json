@@ -32,8 +32,12 @@
     "Value": "none"
   },
   {
+    "Key": "project-name",
+    "Value": "aws-migration"
+  },
+  {
     "Key": "safe-to-destroy",
-    "Value": "yes"
+    "Value": "Yes"
   },
   {
     "Key": "schedule",
@@ -41,7 +45,7 @@
   },
   {
     "Key": "service-name",
-    "Value": "projectReference"
+    "Value": "aidwProjectReference"
   },
   {
     "Key": "service-type",
