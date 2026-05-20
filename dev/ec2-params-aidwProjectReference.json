@@ -49,7 +49,7 @@
   },
   {
     "ParameterKey": "Ec2Name",
-    "ParameterValue": "adwwebd00308"
+    "ParameterValue": "adwwebd00309"
   },
   {
     "ParameterKey": "EnableCodeDeploy",
